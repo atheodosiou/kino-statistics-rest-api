@@ -10,19 +10,20 @@ config();
 import * as basicController from './controllers/basic.controller';
 
 
-    const baseUrl = '/api'
+const baseUrl = '/api/kino/stats'
 
-    //Connect to mongo db
-    connectToDB();
+//Connect to mongo db
+connectToDB();
 
-    app.use(express.json());
+app.use(express.json());
 
-    //Route configuration
-    app.use(`${baseUrl}/hello`, basicController.getData);
+//Route configuration
+app.use(`${baseUrl}/totalEntries`, basicController.getTotalDocuments);
+app.use(`${baseUrl}/draw/:drawId/:lastOrActive`, basicController.getDocumentByDrawId);
 
-    //Error handling 404
-    app.use('/', (req: Request, res: Response, next: NextFunction) => {
-        res.status(404).json({ error: `Not found. Try using ${baseUrl} instead...` });
-    })
+//Error handling 404
+app.use('/', (req: Request, res: Response, next: NextFunction) => {
+    res.status(404).json({ error: `Not found. Try using ${baseUrl} instead...` });
+})
 
-    app.listen(process.env.PORT, () => { console.log(`Server is running on port ${process.env.PORT}...`) });
+app.listen(process.env.PORT, () => { console.log(`Server is running on port ${process.env.PORT}...`) });
