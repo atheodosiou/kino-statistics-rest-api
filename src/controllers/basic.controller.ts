@@ -14,11 +14,10 @@ export const getTotalDocuments = async (req: Request, res: Response, next: NextF
 export const getDocumentByDrawId = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const drawId = req.params.drawId;
-        const lastOrActive = req.params.lastOrActive;
         let doc: any;
-        if (lastOrActive === 'last') {
+        if (req.params.lastOrActive === 'last') {
             doc = await KinoModel.findOne({ "last.drawId": drawId });
-        } else if (lastOrActive === 'active') {
+        } else if (req.params.lastOrActive === 'active') {
             doc = await KinoModel.findOne({ "active.drawId": drawId })
         } else {
             errorHandler(req, res, next, 'You can choose the las or the active draw!', 400);
