@@ -7,8 +7,7 @@ const app = express();
 config();
 
 //Import controllers
-import * as controllerOne from './controllers/test-1.controller';
-import * as controllerTwo from './controllers/test-2.controller';
+import * as basicController from './controllers/basic.controller';
 
 
     const baseUrl = '/api'
@@ -19,8 +18,7 @@ import * as controllerTwo from './controllers/test-2.controller';
     app.use(express.json());
 
     //Route configuration
-    app.use(`${baseUrl}/hello`, controllerOne.sayHello);
-    app.use(`${baseUrl}/hello-again`, controllerTwo.sayHello2);
+    app.use(`${baseUrl}/hello`, basicController.getData);
 
     //Error handling 404
     app.use('/', (req: Request, res: Response, next: NextFunction) => {
