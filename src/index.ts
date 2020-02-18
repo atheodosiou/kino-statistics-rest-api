@@ -6,16 +6,16 @@ const app = express();
 //Initialize dotenv
 config();
 
-//Import controllers
-import * as basicController from './controllers/basic.controller';
 import { MongoHelper } from './utils/db';
 
 const baseUrl = '/api/kino/stats'
 app.use(express.json());
 
-//Routes
-app.use(`${baseUrl}/totalEntries`, basicController.getTotalDocuments);
-app.use(`${baseUrl}/draw/:drawId/:lastOrActive`, basicController.getDocumentByDrawId);
+//Import routes
+import * as basicRoutes from './routes/basic.routes';
+
+//Use Routes
+app.use(`${baseUrl}`, basicRoutes.router);
 
 //Error handling 404
 app.use('/', (req: Request, res: Response, next: NextFunction) => {
