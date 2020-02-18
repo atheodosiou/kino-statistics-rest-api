@@ -5,9 +5,11 @@ import { errorHandler } from '../utils/error-handler';
 export const getDocuments = async (req: Request, res: Response, next: NextFunction) => {
     const hrstart = process.hrtime();
     try {
-        const docs = await KinoModel.find({},{"last.winningNumbers.list":1,"last.winningNumbers.bonus":1})
+        const projection = { "last.winningNumbers.list": 1, "last.winningNumbers.bonus": 1, "last.drawTime": 1 };
+        const docs = await KinoModel.find({}, projection)
             .skip(parseInt(req.body.offset))
-            .limit(parseInt(req.body.limit));
+            .limit(parseInt(req.body.limit))
+            .sort({ "last.drawTime": -1 });
 
         res.setHeader('X-Total-Count', await KinoModel.find({}).countDocuments());
         const hrend = process.hrtime(hrstart);
@@ -17,7 +19,7 @@ export const getDocuments = async (req: Request, res: Response, next: NextFuncti
     } catch (error) {
         errorHandler(req, res, next, error, error.status);
     }
-   
+
 
 }
 
@@ -37,3 +39,22 @@ export const getDocumentByDrawId = async (req: Request, res: Response, next: Nex
         errorHandler(req, res, next, error, error.status);
     }
 }
+
+export const getDocumentsLength = async (req: Request, res: Response, next: NextFunction) => {
+    const hrstart = process.hrtime();
+    try {
+        const projection = { _id:0 };
+        const total = await KinoModel.aggregate([
+            { $group: { _id: null, myCount: { $sum: 1 } } },
+            { $project: projection}
+        ]);
+
+        // res.setHeader('X-Total-Count', await KinoModel.find({}).countDocuments());
+        const hrend = process.hrtime(hrstart);
+        console.info('Execution time (hr): %ds %dms', hrend[0], hrend[1] / 1000000);
+        return res.status(200).json({ "total-documents": total[0].myCount });
+
+    } catch (error) {
+        errorHandler(req, res, next, error, error.status);
+    }
+};

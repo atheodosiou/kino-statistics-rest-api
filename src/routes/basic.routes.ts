@@ -5,6 +5,6 @@ const router = express.Router();
 import * as basicController from '../controllers/basic.controller';
 
 router.post('/',basicController.getDocuments);
-
+router.get('/total',basicController.getDocumentsLength);
 
 export { router };
