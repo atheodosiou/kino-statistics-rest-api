@@ -5,6 +5,7 @@ const router = express.Router();
 import * as basicController from '../controllers/basic.controller';
 
 router.post('/',basicController.getDocuments);
+router.get('/number-frequency',basicController.getNumbersFrequency);
 
 
 export { router };
