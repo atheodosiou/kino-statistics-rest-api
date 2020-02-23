@@ -5,7 +5,8 @@ const router = express.Router();
 import * as basicController from '../controllers/basic.controller';
 
 router.post('/',basicController.getDocuments);
-router.get('/number-frequency',basicController.getNumbersFrequency);
+router.get('/number-occurrences',basicController.getNumbersFrequency);
+router.get('/kino-bonus-occurrences',basicController.getBonusFrequency);
 
 
 export { router };

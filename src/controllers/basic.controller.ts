@@ -40,7 +40,7 @@ export const getDocumentByDrawId = async (req: Request, res: Response, next: Nex
     }
 }
 
-//Find list occurences
+//Find number occurences
 export const getNumbersFrequency = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const numberFrequency = await KinoModel.aggregate([
@@ -62,9 +62,57 @@ export const getNumbersFrequency = async (req: Request, res: Response, next: Nex
             { $project: { _id: 0, "occurrence": 1 } }
         ]);
         const occurences = numberFrequency.map(x=>{return x.occurrence});
+        
+        const totalDraws=await KinoModel.find({}).countDocuments();
+
         const result={
-            drawCount:await KinoModel.find({}).countDocuments(),
-            occurences
+            drawCount:totalDraws,
+            occurences:occurences.map(oc=>{
+                const percentage = (oc.count*100)/totalDraws;
+                oc.percentage=Math.round((percentage+Number.EPSILON)*100)/100;
+                return oc;
+            })
+        }
+        return res.status(200).json(result);
+
+    } catch (error) {
+        errorHandler(req, res, next, error, error.status);
+    }
+
+}
+
+//Find list occurences
+export const getBonusFrequency = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const numberFrequency = await KinoModel.aggregate([
+            { $unwind: "$last.winningNumbers.bonus" },
+            { $group: { "_id": "$last.winningNumbers.bonus", "count": { $sum: 1 } } },
+            {
+                $group: {
+                    "_id": null,
+                    "occurrence": {
+                        $push: {
+                            "kinobonus": "$_id",
+                            "count": "$count"
+                        }
+                    }
+                }
+            },
+            {$unwind:"$occurrence"},
+            {$sort:{"occurrence.kinobonus":1}},
+            { $project: { _id: 0, "occurrence": 1 } }
+        ]);
+        const occurences = numberFrequency.map(x=>{return x.occurrence});
+        
+        const totalDraws=await KinoModel.find({}).countDocuments();
+
+        const result={
+            drawCount:totalDraws,
+            occurences:occurences.map(oc=>{
+                const percentage = (oc.count*100)/totalDraws;
+                oc.percentage=Math.round((percentage+Number.EPSILON)*100)/100;
+                return oc;
+            })
         }
         return res.status(200).json(result);
 
