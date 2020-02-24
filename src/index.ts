@@ -13,7 +13,8 @@ const baseUrl = '/api/kino/stats'
 app.use(express.json());
 
 const options:cors.CorsOptions = {
-    allowedHeaders: ["Origin", "X-Requested-With", "Content-Type", "Accept", "X-Access-Token"],
+    allowedHeaders: ["Origin", "X-Requested-With", "Content-Type", "Accept", "X-Access-Token","X-Total-Count"],
+    exposedHeaders:["Origin", "X-Requested-With", "Content-Type", "Accept", "X-Access-Token","X-Total-Count"],
     credentials: true,
     methods: "GET,HEAD,OPTIONS,PUT,PATCH,POST,DELETE",
     preflightContinue: false

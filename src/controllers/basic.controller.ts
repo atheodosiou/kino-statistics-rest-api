@@ -5,13 +5,14 @@ import { errorHandler } from '../utils/error-handler';
 export const getDocuments = async (req: Request, res: Response, next: NextFunction) => {
     const hrstart = process.hrtime();
     try {
-        const projection = { "last.winningNumbers.list": 1, "last.winningNumbers.bonus": 1, "last.drawTime": 1 };
-        const docs = await KinoModel.find({}, projection)
+        const docs = await KinoModel.find({}, { "last.winningNumbers.list": 1, "last.winningNumbers.bonus": 1, "last.drawId": 1, "last.drawTime": 1 })
             .skip(parseInt(req.body.offset))
-            .limit(parseInt(req.body.limit))
-            .sort({ "last.drawTime": -1 });
+            .limit(parseInt(req.body.limit)).sort({ "last.drawId": -1 });
 
-        res.setHeader('X-Total-Count', await KinoModel.find({}).countDocuments());
+        // res.setHeader('X-Total-Count', await KinoModel.find({}).countDocuments());
+        res.header('X-Total-Count', (await KinoModel.find({}).countDocuments()).toString())
+
+        // res.set('X')
         const hrend = process.hrtime(hrstart);
         console.info('Execution time (hr): %ds %dms', hrend[0], hrend[1] / 1000000);
         return res.status(200).json(docs);
@@ -19,7 +20,6 @@ export const getDocuments = async (req: Request, res: Response, next: NextFuncti
     } catch (error) {
         errorHandler(req, res, next, error, error.status);
     }
-
 
 }
 
@@ -40,21 +40,84 @@ export const getDocumentByDrawId = async (req: Request, res: Response, next: Nex
     }
 }
 
-export const getDocumentsLength = async (req: Request, res: Response, next: NextFunction) => {
-    const hrstart = process.hrtime();
+//Find number occurences
+export const getNumbersFrequency = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const projection = { _id:0 };
-        const total = await KinoModel.aggregate([
-            { $group: { _id: null, myCount: { $sum: 1 } } },
-            { $project: projection}
+        const numberFrequency = await KinoModel.aggregate([
+            { $unwind: "$last.winningNumbers.list" },
+            { $group: { "_id": "$last.winningNumbers.list", "count": { $sum: 1 } } },
+            {
+                $group: {
+                    "_id": null,
+                    "occurrence": {
+                        $push: {
+                            "number": "$_id",
+                            "count": "$count"
+                        }
+                    }
+                }
+            },
+            {$unwind:"$occurrence"},
+            {$sort:{"occurrence.number":1}},
+            { $project: { _id: 0, "occurrence": 1 } }
         ]);
+        const occurences = numberFrequency.map(x=>{return x.occurrence});
+        
+        const totalDraws=await KinoModel.find({}).countDocuments();
 
-        // res.setHeader('X-Total-Count', await KinoModel.find({}).countDocuments());
-        const hrend = process.hrtime(hrstart);
-        console.info('Execution time (hr): %ds %dms', hrend[0], hrend[1] / 1000000);
-        return res.status(200).json({ "total-documents": total[0].myCount });
+        const result={
+            drawCount:totalDraws,
+            occurences:occurences.map(oc=>{
+                const percentage = (oc.count*100)/totalDraws;
+                oc.percentage=Math.round((percentage+Number.EPSILON)*100)/100;
+                return oc;
+            })
+        }
+        return res.status(200).json(result);
 
     } catch (error) {
         errorHandler(req, res, next, error, error.status);
     }
-};
+
+}
+
+//Find list occurences
+export const getBonusFrequency = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const numberFrequency = await KinoModel.aggregate([
+            { $unwind: "$last.winningNumbers.bonus" },
+            { $group: { "_id": "$last.winningNumbers.bonus", "count": { $sum: 1 } } },
+            {
+                $group: {
+                    "_id": null,
+                    "occurrence": {
+                        $push: {
+                            "kinobonus": "$_id",
+                            "count": "$count"
+                        }
+                    }
+                }
+            },
+            {$unwind:"$occurrence"},
+            {$sort:{"occurrence.kinobonus":1}},
+            { $project: { _id: 0, "occurrence": 1 } }
+        ]);
+        const occurences = numberFrequency.map(x=>{return x.occurrence});
+        
+        const totalDraws=await KinoModel.find({}).countDocuments();
+
+        const result={
+            drawCount:totalDraws,
+            occurences:occurences.map(oc=>{
+                const percentage = (oc.count*100)/totalDraws;
+                oc.percentage=Math.round((percentage+Number.EPSILON)*100)/100;
+                return oc;
+            })
+        }
+        return res.status(200).json(result);
+
+    } catch (error) {
+        errorHandler(req, res, next, error, error.status);
+    }
+
+}
