@@ -10,7 +10,7 @@ export const getDocuments = async (req: Request, res: Response, next: NextFuncti
             .limit(parseInt(req.body.limit)).sort({ "last.drawId": -1 });
 
         // res.setHeader('X-Total-Count', await KinoModel.find({}).countDocuments());
-        res.header('X-Total-Count', (await KinoModel.find({}).countDocuments()).toString())
+        res.header('X-Total-Count', (await KinoModel.countDocuments()).toString())
 
         // res.set('X')
         const hrend = process.hrtime(hrstart);
@@ -63,7 +63,7 @@ export const getNumbersFrequency = async (req: Request, res: Response, next: Nex
         ]);
         const occurences = numberFrequency.map(x=>{return x.occurrence});
         
-        const totalDraws=await KinoModel.find({}).countDocuments();
+        const totalDraws=await KinoModel.countDocuments();
 
         const result={
             drawCount:totalDraws,
@@ -73,6 +73,7 @@ export const getNumbersFrequency = async (req: Request, res: Response, next: Nex
                 return oc;
             })
         }
+        res.header('X-Total-Count', totalDraws.toString())
         return res.status(200).json(result);
 
     } catch (error) {
@@ -81,7 +82,7 @@ export const getNumbersFrequency = async (req: Request, res: Response, next: Nex
 
 }
 
-//Find list occurences
+//Find kinobonus occurences
 export const getBonusFrequency = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const numberFrequency = await KinoModel.aggregate([
@@ -104,7 +105,7 @@ export const getBonusFrequency = async (req: Request, res: Response, next: NextF
         ]);
         const occurences = numberFrequency.map(x=>{return x.occurrence});
         
-        const totalDraws=await KinoModel.find({}).countDocuments();
+        const totalDraws=await KinoModel.countDocuments();
 
         const result={
             drawCount:totalDraws,
@@ -114,6 +115,7 @@ export const getBonusFrequency = async (req: Request, res: Response, next: NextF
                 return oc;
             })
         }
+        res.header('X-Total-Count', totalDraws.toString())
         return res.status(200).json(result);
 
     } catch (error) {
@@ -121,3 +123,35 @@ export const getBonusFrequency = async (req: Request, res: Response, next: NextF
     }
 
 }
+
+//Find list occurences
+export const getTopFrequentNumbers = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const topFrequent = await KinoModel.aggregate([
+            { $unwind: "$last.winningNumbers.list" },
+            { $group: { "_id": "$last.winningNumbers.list", "count": { $sum: 1 } } },
+            { $sort:{"count":-1}},
+            {
+                $group: {
+                    "_id": null,
+                    "frequent": {
+                        $push: {
+                            "number": "$_id",
+                            "count": "$count"
+                        }
+                    }
+                }
+            },
+            {$unwind:"$frequent"},
+            { $project: { _id: 0,"frequent":1, "count": 1 } }
+        ]).limit(parseInt(req.body.top));
+
+        res.header('X-Total-Count', (await KinoModel.countDocuments()).toString())
+        return res.status(200).json(topFrequent);
+
+    } catch (error) {
+        errorHandler(req, res, next, error, error.status);
+    }
+
+}
+
