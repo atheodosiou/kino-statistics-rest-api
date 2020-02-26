@@ -4,8 +4,16 @@ import { errorHandler } from '../utils/error-handler';
 
 export const getDocuments = async (req: Request, res: Response, next: NextFunction) => {
     const hrstart = process.hrtime();
+    const projection = { 
+        "last.winningNumbers.list": 1, 
+        "last.winningNumbers.bonus": 1, 
+        "last.drawId": 1, 
+        "last.drawTime": 1,
+        "last.winningNumbers.sidebets.winningParity":1,
+        "last.winningNumbers.sidebets.winningColumn":1
+    };
     try {
-        const docs = await KinoModel.find({}, { "last.winningNumbers.list": 1, "last.winningNumbers.bonus": 1, "last.drawId": 1, "last.drawTime": 1 })
+        const docs = await KinoModel.find({}, projection)
             .skip(parseInt(req.body.offset))
             .limit(parseInt(req.body.limit)).sort({ "last.drawId": -1 });
 
