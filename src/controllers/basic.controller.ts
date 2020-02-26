@@ -153,5 +153,10 @@ export const getTopFrequentNumbers = async (req: Request, res: Response, next: N
         errorHandler(req, res, next, error, error.status);
     }
 
+    
+
 }
 
+export const getTotalNumberOfDarws = async (req: Request, res: Response, next: NextFunction) => {
+    res.status(200).json({totalDraws:await KinoModel.countDocuments()});
+}
