@@ -3,7 +3,6 @@ import { KinoModel } from '../models/last-and-active.model';
 import { errorHandler } from '../utils/error-handler';
 
 export const getDocuments = async (req: Request, res: Response, next: NextFunction) => {
-    const hrstart = process.hrtime();
     const projection = { 
         "last.winningNumbers.list": 1, 
         "last.winningNumbers.bonus": 1, 
@@ -16,13 +15,8 @@ export const getDocuments = async (req: Request, res: Response, next: NextFuncti
         const docs = await KinoModel.find({}, projection)
             .skip(parseInt(req.body.offset))
             .limit(parseInt(req.body.limit)).sort({ "last.drawId": -1 });
-
-        // res.setHeader('X-Total-Count', await KinoModel.find({}).countDocuments());
+            
         res.header('X-Total-Count', (await KinoModel.countDocuments()).toString())
-
-        // res.set('X')
-        const hrend = process.hrtime(hrstart);
-        console.info('Execution time (hr): %ds %dms', hrend[0], hrend[1] / 1000000);
         return res.status(200).json(docs);
 
     } catch (error) {
