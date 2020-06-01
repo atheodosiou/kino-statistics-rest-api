@@ -20,7 +20,9 @@
   "author": "Anastasios Theodosiou",
   "license": "ISC",
   "dependencies": {
+    "@sendgrid/mail": "^7.0.0",
     "@types/mongoose": "^5.7.1",
+    "@types/sendgrid": "^4.3.0",
     "cors": "^2.8.5",
     "express": "^4.17.1",
     "mongoose": "^5.9.1"
