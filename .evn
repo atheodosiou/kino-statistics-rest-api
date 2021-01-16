@@ -1,2 +1,0 @@
-PORT=4242
-CONNECTION_STRING=mongodb://localhost:27017/kinoResults

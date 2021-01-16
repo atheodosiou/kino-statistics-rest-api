@@ -3,7 +3,7 @@ const router = express.Router();
 
 //Import controllers
 import * as basicController from '../controllers/basic.controller';
-import * as mailController from '../controllers/mail.controller';
+// import * as mailController from '../controllers/mail.controller';
 router.post('/',basicController.getDocuments);
 router.get('/number-occurrences',basicController.getNumbersFrequency);
 router.get('/kino-bonus-occurrences',basicController.getBonusFrequency);
@@ -12,6 +12,6 @@ router.get('/total-draws',basicController.getTotalNumberOfDarws);
 
 
 //email
-router.post('/send',mailController.sendMail);
+// router.post('/send',mailController.sendMail);
 
 export { router };

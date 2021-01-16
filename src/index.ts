@@ -1,13 +1,13 @@
 import express, { Request, Response, NextFunction } from 'express';
-import { config } from 'dotenv';
+import * as dotenv from 'dotenv';
 import cors from 'cors';
 import {setApiKey} from '@sendgrid/mail';
 
 //Initialize express
 const app = express();
 //Initialize dotenv
-config();
-setApiKeyForSendGrid();
+dotenv.config();
+// setApiKeyForSendGrid();
 
 import { MongoHelper } from './utils/db';
 
@@ -39,9 +39,3 @@ app.listen(process.env.PORT, async () => {
     console.log(`Server is running on port ${process.env.PORT}...`);
     await MongoHelper.connectToDB(process.env.CONNECTION_STRING as string)
 });
-
-//Functions
-export function setApiKeyForSendGrid(){
-    console.log('SendGrid API key was set!')
-    setApiKey(process.env.SENDGRID_API_KEY as string);
-}
